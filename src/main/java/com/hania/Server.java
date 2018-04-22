@@ -1,4 +1,4 @@
-package com.hania.hello;
+package com.hania;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -13,5 +13,11 @@ import javax.jws.soap.SOAPBinding.Style;
 public interface Server {
 
     @WebMethod
-    String sayHello(String name);
+    void sendMessage(String message);
+
+    @WebMethod
+    String fetchMessages();
+
+    @WebMethod
+    void stopThread();
 }
