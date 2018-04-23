@@ -13,10 +13,10 @@ import javax.jws.soap.SOAPBinding.Style;
 public interface Server {
 
     @WebMethod
-    void sendMessage(String message);
+    void sendMessage(String message, int port);
 
     @WebMethod
-    String fetchMessages();
+    void receiveMessage(String message, int port, String name);
 
     @WebMethod
     void stopThread();

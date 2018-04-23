@@ -60,14 +60,14 @@ public class Client implements Runnable {
             Service service = Service.create(url, qname);
             server = service.getPort(Server.class);
             host = InetAddress.getLocalHost().getHostName();
-            socket = new Socket(host, ServerImpl.SERVER_PORT);
+//            socket = new Socket(host, ServerImpl.SERVER_PORT);
         } catch (IOException e) {
             LOG.error("", e);
             return;
         }
 
-        server.sendMessage("test");
-        LOG.info(server.fetchMessages());
+//        server.sendMessage("test");
+//        LOG.info(server.fetchMessages());
 
         while (running) {
 //            server.fetchMessages();

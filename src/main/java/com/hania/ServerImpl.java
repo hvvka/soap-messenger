@@ -4,12 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jws.WebService;
+import javax.swing.*;
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.URL;
 
 /**
  * @author <a href="mailto:226154@student.pwr.edu.pl">Hanna Grodzicka</a>
@@ -17,42 +19,63 @@ import java.util.List;
 @WebService(endpointInterface = "com.hania.Server")
 public class ServerImpl implements Server, Runnable {
 
-    static final int SERVER_PORT = 15000;
     private static final Logger LOG = LoggerFactory.getLogger(ServerImpl.class);
-    private List<String> messages;
+
+    private int serverPort;
 
     private ServerSocket serverSocket;
 
     private String host;
 
-    private boolean running;
+    private String name;
+
+    private JTextArea messageArea;
+
+    private Thread thread;
 
     public ServerImpl() {
-        messages = new ArrayList<>();
-        running = true;
+    }
+
+    public ServerImpl(int serverPort, String name, JTextArea messageArea) {
+        this.name = name;
+        this.serverPort = serverPort;
+        this.messageArea = messageArea;
         waitForClients();
     }
 
     private void waitForClients() {
-        Thread thread = new Thread(this);
+        thread = new Thread(this);
         thread.start();
     }
 
     @Override
-    public synchronized void sendMessage(String message) {
-        messages.add(message);
+    public synchronized void sendMessage(String message, int port) {
+        try {
+            URL url = new URL("http://localhost:" + port + "/ws/hello?wsdl");
+            QName qname = new QName("http://hania.com/", "ServerImplService");
+            Service service = Service.create(url, qname);
+            Server server = service.getPort(Server.class);
+            host = InetAddress.getLocalHost().getHostName();
+//            Socket socket = new Socket(host, port);
+            server.receiveMessage(message, this.serverPort, this.name);
+        } catch (IOException e) {
+            LOG.error("", e);
+        }
     }
 
     @Override
-    public synchronized String fetchMessages() {
-        if (!messages.isEmpty()) return messages.get(messages.size() - 1);
-        else return "";
+    public synchronized void receiveMessage(String message, int port, String name) {
+        LOG.info(">>User {} received message from: user {} on port {}", this.name, name, port);
+        LOG.info(">>Message: {}", message);
+        messageArea.append(name + "@" + port + ": " + message);
+//        return name + "@" + port + ": " + message;
     }
 
     @Override
     public synchronized void stopThread() {
         try {
             serverSocket.close();
+            thread.interrupt();
         } catch (IOException e) {
             LOG.error("", e);
         }
@@ -60,21 +83,20 @@ public class ServerImpl implements Server, Runnable {
 
     @Override
     public void run() {
-        Socket socket;
-        ClientThread clientThread;
-
+//        ClientThread clientThread;
         initializeNetworkConnections();
-
-        while (running) {
-            try {
-                socket = serverSocket.accept();
+        while (!Thread.currentThread().isInterrupted()) {
+            try (Socket socket = serverSocket.accept()) {
                 LOG.info("Accepted client connection");
-
-                if (socket != null) {
-                    clientThread = new ClientThread(this, socket);
-                }
+                Thread.sleep(1000);
+//                if (socket != null) {
+//                    clientThread = new ClientThread(this, socket);
+//                }
             } catch (IOException e) {
-                LOG.error("SERVER ERROR: Cannot connect to client.");
+                LOG.error("{} error: Cannot connect to client", this.name);
+            } catch (InterruptedException e) {
+                LOG.error("Thread was interrupted");
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -82,11 +104,17 @@ public class ServerImpl implements Server, Runnable {
     private void initializeNetworkConnections() {
         try {
             host = InetAddress.getLocalHost().getHostName();
-            serverSocket = new ServerSocket(SERVER_PORT);
+            serverSocket = new ServerSocket(serverPort);
         } catch (IOException e) {
             LOG.error("Server socket cannot be created", e);
             System.exit(0);
         }
-        LOG.info("Server has started at host {}", host);
+        LOG.info("Server {} has started at host {}, on port {}", name, host, serverPort);
     }
+
+//    public static void main(String[] args) {
+//        LOG.info("Beginning to receive Server now");
+//        Server server2 = new ServerImpl(10000, "Bar");
+//        Endpoint.publish("http://localhost:10000/ws/hello", server2);
+//    }
 }
