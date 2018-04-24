@@ -56,7 +56,6 @@ public class ServerImpl implements Server, Runnable {
             Service service = Service.create(url, qname);
             Server server = service.getPort(Server.class);
             host = InetAddress.getLocalHost().getHostName();
-//            Socket socket = new Socket(host, port);
             server.receiveMessage(message, this.serverPort, this.name);
         } catch (IOException e) {
             LOG.error("", e);
@@ -66,9 +65,7 @@ public class ServerImpl implements Server, Runnable {
     @Override
     public synchronized void receiveMessage(String message, int port, String name) {
         LOG.info(">>User {} received message from: user {} on port {}", this.name, name, port);
-        LOG.info(">>Message: {}", message);
         messageArea.append(name + "@" + port + ": " + message);
-//        return name + "@" + port + ": " + message;
     }
 
     @Override
@@ -83,15 +80,11 @@ public class ServerImpl implements Server, Runnable {
 
     @Override
     public void run() {
-//        ClientThread clientThread;
         initializeNetworkConnections();
         while (!Thread.currentThread().isInterrupted()) {
             try (Socket socket = serverSocket.accept()) {
                 LOG.info("Accepted client connection");
-                Thread.sleep(1000);
-//                if (socket != null) {
-//                    clientThread = new ClientThread(this, socket);
-//                }
+                Thread.sleep(5000);
             } catch (IOException e) {
                 LOG.error("{} error: Cannot connect to client", this.name);
             } catch (InterruptedException e) {
@@ -111,10 +104,4 @@ public class ServerImpl implements Server, Runnable {
         }
         LOG.info("Server {} has started at host {}, on port {}", name, host, serverPort);
     }
-
-//    public static void main(String[] args) {
-//        LOG.info("Beginning to receive Server now");
-//        Server server2 = new ServerImpl(10000, "Bar");
-//        Endpoint.publish("http://localhost:10000/ws/hello", server2);
-//    }
 }

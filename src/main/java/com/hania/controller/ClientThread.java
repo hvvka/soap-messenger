@@ -4,6 +4,8 @@ import com.hania.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.Socket;
+
 /**
  * @author <a href="mailto:226154@student.pwr.edu.pl">Hanna Grodzicka</a>
  */
@@ -12,6 +14,8 @@ public class ClientThread implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(ClientThread.class);
 
     private Server server;
+
+    private Socket socket;
 
     private Thread thread;
 

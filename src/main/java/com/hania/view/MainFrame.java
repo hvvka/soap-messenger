@@ -7,18 +7,18 @@ import javax.swing.*;
  */
 public class MainFrame extends JFrame {
 
-    private static final int WIDTH = 500;
-    private static final int HEIGHT = 300;
+    private static final int WIDTH = 600;
+    private static final int HEIGHT = 350;
 
     private JPanel mainPanel;
     private JTextField usernameText;
     private JTextField userPortText;
     private JButton connectButton;
-    private JButton disconnetButton;
+    private JButton disconnectButton;
     private JTextArea messageArea;
     private JTextField messageText;
-    private JTextField receiverPortText;
     private JButton sendButton;
+    private JComboBox receiverPortBox;
 
     public MainFrame() {
         super("SOAP messenger");
@@ -41,8 +41,8 @@ public class MainFrame extends JFrame {
         return connectButton;
     }
 
-    public JButton getDisconnetButton() {
-        return disconnetButton;
+    public JButton getDisconnectButton() {
+        return disconnectButton;
     }
 
     public JTextArea getMessageArea() {
@@ -53,11 +53,11 @@ public class MainFrame extends JFrame {
         return messageText;
     }
 
-    public JTextField getReceiverPortText() {
-        return receiverPortText;
-    }
-
     public JButton getSendButton() {
         return sendButton;
+    }
+
+    public JComboBox getReceiverPortBox() {
+        return receiverPortBox;
     }
 }
