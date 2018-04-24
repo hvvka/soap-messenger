@@ -36,10 +36,10 @@ public class MainController {
     private Server server;
     private int usedPort;
     private PortListClient portListClient;
+    private Endpoint endpoint;
 
     public MainController() {
         server = null;
-        portListClient = new PortListClient();
         mainFrame = new MainFrame();
         mainFrame.addWindowListener(getWindowAdapter());
         initComponents();
@@ -50,10 +50,10 @@ public class MainController {
         return new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int option = JOptionPane.showConfirmDialog(null, "Do you want to quit?");
+                int option = JOptionPane.showConfirmDialog(mainFrame, "Do you want to quit?");
                 if (option == 0) {
                     stopServer();
-                    System.exit(0);
+                    mainFrame.dispose();
                 }
             }
         };
@@ -62,6 +62,8 @@ public class MainController {
     private void stopServer() {
         if (server != null) {
             server.stopThread();
+            server = null;
+            endpoint.stop();
             portListClient.removeUsedPort(usedPort);
         }
     }
@@ -77,17 +79,7 @@ public class MainController {
         sendButton = mainFrame.getSendButton();
         passButton = mainFrame.getPassButton();
         broadcastButton = mainFrame.getBroadcastButton();
-        setEnabledComponents(false);
-    }
-
-    private void setEnabledComponents(boolean isEnabled) {
-        disconnectButton.setEnabled(isEnabled);
-        messageArea.setEnabled(isEnabled);
-        messageText.setEnabled(isEnabled);
-        receiverPortBox.setEnabled(isEnabled);
-        sendButton.setEnabled(isEnabled);
-        passButton.setEnabled(isEnabled);
-        broadcastButton.setEnabled(isEnabled);
+        mainFrame.setEnabledComponents(false);
     }
 
     private void initListeners() {
@@ -103,19 +95,27 @@ public class MainController {
             String port = userPortText.getText();
             String name = usernameText.getText();
             if ((!"".equals(name) || !"".equals(port)) && server == null) {
-                usedPort = Integer.parseInt(port);
-                server = new ServerImpl(Integer.parseInt(port), name, messageArea);
-                Endpoint.publish("http://localhost:" + port + "/ws/hello", server);
-                portListClient.addUsedPort(usedPort);
+                initializeConnection(port, name);
                 initScheduler();
-                userPortText.setBackground(Color.GREEN);
-                usernameText.setBackground(Color.GREEN);
-                setEnabledComponents(true);
+                setComponents(Color.GREEN, true);
             } else {
-                userPortText.setBackground(Color.RED);
-                usernameText.setBackground(Color.RED);
+                setComponents(Color.RED, false);
             }
         });
+    }
+
+    private void setComponents(Color textBackgroundColor, boolean isEnabled) {
+        userPortText.setBackground(textBackgroundColor);
+        usernameText.setBackground(textBackgroundColor);
+        mainFrame.setEnabledComponents(isEnabled);
+    }
+
+    private void initializeConnection(String port, String name) {
+        portListClient = new PortListClient();
+        usedPort = Integer.parseInt(port);
+        server = new ServerImpl(Integer.parseInt(port), name, messageArea);
+        endpoint = Endpoint.publish("http://localhost:" + port + "/ws/hello", server);
+        portListClient.addUsedPort(usedPort);
     }
 
     private void addSendListener() {
@@ -123,6 +123,7 @@ public class MainController {
             String message = messageText.getText();
             String port = Objects.requireNonNull(receiverPortBox.getSelectedItem()).toString();
             server.sendMessage(message, Integer.parseInt(port));
+            messageText.setText("");
         });
     }
 
@@ -130,14 +131,16 @@ public class MainController {
         passButton.addActionListener(e -> {
             List<Integer> portList = portListClient.getUsedPorts();
             String message = messageText.getText();
-            Optional<Integer> portIndex = portList.stream().map(p -> {
-                if (p == usedPort) return portList.indexOf(p);
-                else return 0;
-            }).findFirst();
+            Optional<Integer> portIndex = portList.stream()
+                    .filter(p -> p == usedPort)
+                    .map(portList::indexOf)
+                    .findFirst();
             portIndex.ifPresent(index -> {
                 int nextPort = index == portList.size() - 1 ? 0 : index + 1;
-                server.sendMessage(message, portList.get(nextPort));
+                if (portIndex.get() != nextPort)
+                    server.sendMessage(message, portList.get(nextPort));
             });
+            messageText.setText("");
         });
     }
 
@@ -148,13 +151,14 @@ public class MainController {
                 if (port != usedPort)
                     server.sendMessage(message, port);
             }
+            messageText.setText("");
         });
     }
 
     private void addDisconnectListener() {
         disconnectButton.addActionListener(e -> {
             stopServer();
-            setEnabledComponents(false);
+            setComponents(Color.LIGHT_GRAY, false);
         });
     }
 

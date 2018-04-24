@@ -21,13 +21,15 @@ public class MainFrame extends JFrame {
     private JComboBox receiverPortBox;
     private JButton passButton;
     private JButton broadcastButton;
+    private JLabel messageLabel;
+    private JLabel portLabel;
 
     public MainFrame() {
         super("SOAP messenger");
         setSize(WIDTH, HEIGHT);
         setContentPane(mainPanel);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setVisible(true);
     }
 
@@ -69,5 +71,17 @@ public class MainFrame extends JFrame {
 
     public JButton getBroadcastButton() {
         return broadcastButton;
+    }
+
+    public void setEnabledComponents(boolean isEnabled) {
+        disconnectButton.setEnabled(isEnabled);
+        messageArea.setEnabled(isEnabled);
+        messageText.setEnabled(isEnabled);
+        receiverPortBox.setEnabled(isEnabled);
+        sendButton.setEnabled(isEnabled);
+        passButton.setEnabled(isEnabled);
+        broadcastButton.setEnabled(isEnabled);
+        messageLabel.setEnabled(isEnabled);
+        portLabel.setEnabled(isEnabled);
     }
 }

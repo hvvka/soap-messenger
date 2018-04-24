@@ -21,9 +21,9 @@ public class ServerImpl implements Server, Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServerImpl.class);
 
-    private int serverPort;
-
     private ServerSocket serverSocket;
+
+    private int serverPort;
 
     private String host;
 
@@ -64,7 +64,7 @@ public class ServerImpl implements Server, Runnable {
 
     @Override
     public synchronized void receiveMessage(String message, int port, String name) {
-        LOG.info(">>User {} received message from: user {} on port {}", this.name, name, port);
+        LOG.info(">>User {} received message from: {} on port {}", this.name, name, port);
         messageArea.append(name + "@" + port + ": " + message + "\n");
     }
 
