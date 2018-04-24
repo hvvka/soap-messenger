@@ -23,7 +23,7 @@ class PortListClient {
         try {
             PortListRemote remoteServer = getServer();
             if (remoteServer != null) {
-                LOG.info("Port list: {}", remoteServer.getUsedPorts());
+                LOG.debug("Port list: {}", remoteServer.getUsedPorts());
                 return remoteServer.getUsedPorts();
             }
         } catch (RemoteException e) {
@@ -59,7 +59,7 @@ class PortListClient {
         Registry registry = getRegistry();
         try {
             remoteServer = (PortListRemote) registry.lookup(SERVER_NAME);
-            LOG.info("PortListRemote {} lookup succeed.", SERVER_NAME);
+            LOG.debug("PortListRemote {} lookup succeed.", SERVER_NAME);
         } catch (NotBoundException e) {
             LOG.error("", e);
         }

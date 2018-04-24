@@ -9,7 +9,9 @@ import javax.xml.ws.Endpoint;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +30,8 @@ public class MainController {
     private JTextField messageText;
     private JButton sendButton;
     private JComboBox receiverPortBox;
+    private JButton passButton;
+    private JButton broadcastButton;
 
     private Server server;
     private int usedPort;
@@ -71,6 +75,8 @@ public class MainController {
         messageText = mainFrame.getMessageText();
         receiverPortBox = mainFrame.getReceiverPortBox();
         sendButton = mainFrame.getSendButton();
+        passButton = mainFrame.getPassButton();
+        broadcastButton = mainFrame.getBroadcastButton();
         setEnabledComponents(false);
     }
 
@@ -80,12 +86,16 @@ public class MainController {
         messageText.setEnabled(isEnabled);
         receiverPortBox.setEnabled(isEnabled);
         sendButton.setEnabled(isEnabled);
+        passButton.setEnabled(isEnabled);
+        broadcastButton.setEnabled(isEnabled);
     }
 
     private void initListeners() {
         addConnectListener();
         addSendListener();
         addDisconnectListener();
+        addPassListener();
+        addBroadcastListener();
     }
 
     private void addConnectListener() {
@@ -116,6 +126,31 @@ public class MainController {
         });
     }
 
+    private void addPassListener() {
+        passButton.addActionListener(e -> {
+            List<Integer> portList = portListClient.getUsedPorts();
+            String message = messageText.getText();
+            Optional<Integer> portIndex = portList.stream().map(p -> {
+                if (p == usedPort) return portList.indexOf(p);
+                else return 0;
+            }).findFirst();
+            portIndex.ifPresent(index -> {
+                int nextPort = index == portList.size() - 1 ? 0 : index + 1;
+                server.sendMessage(message, portList.get(nextPort));
+            });
+        });
+    }
+
+    private void addBroadcastListener() {
+        broadcastButton.addActionListener(e -> {
+            String message = messageText.getText();
+            for (Integer port : portListClient.getUsedPorts()) {
+                if (port != usedPort)
+                    server.sendMessage(message, port);
+            }
+        });
+    }
+
     private void addDisconnectListener() {
         disconnectButton.addActionListener(e -> {
             stopServer();
@@ -126,7 +161,7 @@ public class MainController {
     private void initScheduler() {
         Runnable getSelectedAnswer = this::refreshPortList;
         final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(getSelectedAnswer, 1, 5, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(getSelectedAnswer, 1, 10, TimeUnit.SECONDS);
     }
 
     private void refreshPortList() {

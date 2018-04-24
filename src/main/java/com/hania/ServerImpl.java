@@ -65,7 +65,7 @@ public class ServerImpl implements Server, Runnable {
     @Override
     public synchronized void receiveMessage(String message, int port, String name) {
         LOG.info(">>User {} received message from: user {} on port {}", this.name, name, port);
-        messageArea.append(name + "@" + port + ": " + message);
+        messageArea.append(name + "@" + port + ": " + message + "\n");
     }
 
     @Override

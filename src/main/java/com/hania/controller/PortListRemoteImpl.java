@@ -21,7 +21,7 @@ public class PortListRemoteImpl extends UnicastRemoteObject implements PortListR
 
     private List<Integer> usedPorts;
 
-    public PortListRemoteImpl() throws RemoteException {
+    private PortListRemoteImpl() throws RemoteException {
         super();
         usedPorts = new ArrayList<>();
     }
@@ -51,5 +51,23 @@ public class PortListRemoteImpl extends UnicastRemoteObject implements PortListR
     @Override
     public void removeUsedPort(Integer usedPort) {
         usedPorts.remove(usedPort);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        PortListRemoteImpl that = (PortListRemoteImpl) o;
+
+        return usedPorts != null ? usedPorts.equals(that.usedPorts) : that.usedPorts == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (usedPorts != null ? usedPorts.hashCode() : 0);
+        return result;
     }
 }

@@ -19,6 +19,8 @@ public class MainFrame extends JFrame {
     private JTextField messageText;
     private JButton sendButton;
     private JComboBox receiverPortBox;
+    private JButton passButton;
+    private JButton broadcastButton;
 
     public MainFrame() {
         super("SOAP messenger");
@@ -59,5 +61,13 @@ public class MainFrame extends JFrame {
 
     public JComboBox getReceiverPortBox() {
         return receiverPortBox;
+    }
+
+    public JButton getPassButton() {
+        return passButton;
+    }
+
+    public JButton getBroadcastButton() {
+        return broadcastButton;
     }
 }
